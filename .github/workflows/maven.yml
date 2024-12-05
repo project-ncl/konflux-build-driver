@@ -1,0 +1,79 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - 'LICENSE'
+    - 'README.md'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+    - 'LICENSE'
+    - 'README.md'
+
+jobs:
+  build:
+    # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
+    # if: github.repository == 'pnc/konflux-build-konflux-build-driver' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cache local Maven repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 21
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v5
+      with:
+        maven-version:  3.9.8
+    - name: Build with Maven
+      run: mvn -B -V install  -Dvalidate-format
+    - name: Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true
+
+  snapshot:
+    if: github.repository == 'pnc/konflux-build-konflux-build-driver' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Cache local Maven repository
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 21
+    # https://github.com/marketplace/actions/maven-setings-action
+    - name: Maven Settings
+      uses: s4u/maven-settings-action@v3.0.0
+      with:
+        sonatypeSnapshots: true
+        githubServer: false
+        servers: |
+            [{
+                "id": "sonatype-nexus-snapshots",
+                "username": "${{ secrets.SONATYPE_USERNAME }}",
+                "password": "${{ secrets.SONATYPE_PASSWORD }}"
+            }]
+    - name: Deploy Snapshot
+      run: mvn -B -V org.apache.maven.plugins:maven-source-plugin:jar-no-fork deploy
