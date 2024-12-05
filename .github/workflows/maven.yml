@@ -18,7 +18,7 @@ on:
 jobs:
   build:
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idif
-    # if: github.repository == 'pnc/konflux-build-konflux-build-driver' && github.event_name == 'pull_request'
+    if: github.repository == 'project-ncl/konflux-build-driver' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
         verbose: true
 
   snapshot:
-    if: github.repository == 'pnc/konflux-build-konflux-build-driver' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.repository == 'project-ncl/konflux-build-driver' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

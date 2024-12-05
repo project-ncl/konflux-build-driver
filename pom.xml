@@ -14,11 +14,11 @@
 
     <name>Konflux Build Driver</name>
     <description>PNC Build Driver for Konflux</description>
-    <url>https://github.com/pnc/konflux-build-driver</url>
+    <url>https://github.com/project-ncl/konflux-build-driver</url>
     <scm>
-        <connection>scm:git:https://github.com/pnc/konflux-build-driver.git</connection>
-        <developerConnection>scm:git:git@github.com:pnc/konflux-build-driver.git</developerConnection>
-        <url>https://github.com/pnc/konflux-build-driver</url>
+        <connection>scm:git:https://github.com/project-ncl/konflux-build-driver.git</connection>
+        <developerConnection>scm:git:git@github.com:project-ncl/konflux-build-driver.git</developerConnection>
+        <url>https://github.com/project-ncl/konflux-build-driver</url>
         <tag>HEAD</tag>
     </scm>
     <licenses>
@@ -46,6 +46,8 @@
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.17.3</quarkus.platform.version>
+
+        <version.lombok>1.18.32</version.lombok>
     </properties>
 
     <dependencyManagement>
@@ -61,6 +63,26 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${version.lombok}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit5</artifactId>
