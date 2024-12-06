@@ -6,6 +6,8 @@ import lombok.Builder;
 
 @Builder(builderClassName = "Builder")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CancelRequest(String pipelineId, String namespace) {
+public record CancelRequest(
+        String pipelineId,
+        String namespace) {
 
 }

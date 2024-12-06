@@ -6,6 +6,8 @@ import lombok.Builder;
 
 @Builder(builderClassName = "Builder")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record BuildResponse(String pipelineId, String namespace) {
+public record BuildResponse(
+        String pipelineId,
+        String namespace) {
 
 }

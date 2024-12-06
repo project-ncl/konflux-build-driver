@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.pnc.api.dto.ComponentVersion;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
@@ -16,7 +14,6 @@ import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -32,9 +29,6 @@ public class EndpointTest {
 
     @KubernetesTestServer
     KubernetesServer mockServer;
-
-    @Inject
-    KubernetesClient client;
 
     @InjectMock
     @RestClient

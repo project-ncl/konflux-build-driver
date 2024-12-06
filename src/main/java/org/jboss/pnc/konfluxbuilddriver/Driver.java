@@ -1,9 +1,7 @@
 package org.jboss.pnc.konfluxbuilddriver;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -28,6 +26,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1.ParamBuilder;
 import io.fabric8.tekton.pipeline.v1.PipelineRun;
+import io.fabric8.tekton.pipeline.v1.PipelineRunStatusBuilder;
 import io.quarkus.oidc.client.OidcClient;
 
 @ApplicationScoped
@@ -104,11 +103,10 @@ public class Driver {
 
     public void cancel(CancelRequest request) {
         var tc = client.adapt(TektonClient.class);
-        var pipeline = tc.v1beta1().pipelineRuns().inNamespace(request.namespace()).withName(request.pipelineId()).get();
+        var pipeline = tc.v1().pipelineRuns().inNamespace(request.namespace()).withName(request.pipelineId()).get();
 
         logger.info("Retrieved pipeline {}", pipeline.getMetadata().getName());
 
-        List<Condition> conditions = new ArrayList<>();
         // https://tekton.dev/docs/pipelines/pipelineruns/#monitoring-execution-status
         Condition cancelCondition = new Condition();
         cancelCondition.setType("Succeeded");
@@ -116,16 +114,15 @@ public class Driver {
         // https://github.com/tektoncd/community/blob/main/teps/0058-graceful-pipeline-run-termination.md
         cancelCondition.setReason("CancelledRunFinally");
         cancelCondition.setMessage("The PipelineRun was cancelled");
-        conditions.add(cancelCondition);
 
-        pipeline.getStatus().setConditions(conditions);
+        pipeline.setStatus(new PipelineRunStatusBuilder(pipeline.getStatus()).withConditions(cancelCondition).build());
 
-        tc.v1beta1().pipelineRuns().inNamespace(request.namespace()).resource(pipeline).updateStatus();
+        tc.v1().pipelineRuns().inNamespace(request.namespace()).resource(pipeline).updateStatus();
     }
 
     /**
-     * Get a fresh access token for the service account. This is done because we want to get a
-     * super-new token to be used since we're not entirely sure when the http request will be done.
+     * Get a fresh access token for the service account. This is done because we want to get a super-new token to be used since
+     * we're not entirely sure when the http request will be done.
      *
      * @return fresh access token
      */

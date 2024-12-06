@@ -41,9 +41,7 @@ public class Public {
     @RunOnVirtualThread
     public BuildResponse build(BuildRequest buildRequest) {
         logger.info("Requested project build: {}", buildRequest.projectName());
-        var result = driver.create(buildRequest);
-        logger.info("### Got {}", result);
-        return result;
+        return driver.create(buildRequest);
     }
 
     @PUT
