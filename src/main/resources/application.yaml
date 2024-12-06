@@ -1,0 +1,27 @@
+konflux-build-driver:
+  quay-repo: "quay.io/redhat-user-workloads-stage/pnc-devel-tenant/pnc-konflux"
+  konflux-processor: "quay.io/redhat-user-workloads/konflux-jbs-pnc-tenant/jvm-build-service/build-request-processor:latest"
+  # TODO: This will eventually be build-definitions repository
+  pipeline-resolver: "https://raw.githubusercontent.com/redhat-appstudio/jvm-build-service/refs/heads/main/deploy/pipeline/mw-pipeline-v0.1.yaml"
+quarkus:
+  application:
+    name: konflux-build-driver
+  shutdown:
+    timeout: 300
+  log:
+    category:
+      "org.jboss.pnc.konfluxbuilddriver":
+        level: DEBUG
+  oidc:
+    auth-server-url: https://keycloak-host/auth/realms/pncredhat
+    client-id: client
+    credentials:
+      secret: secret
+  oidc-client:
+    auth-server-url: https://keycloak-host/auth/realms/pncredhat
+    client-id: service-account
+    credentials:
+      secret: secret-of-service-account
+  rest-client:
+    indy-service:
+      url: "http://localhost:8080"

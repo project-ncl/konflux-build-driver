@@ -1,0 +1,7 @@
+quarkus:
+  oidc:
+    enabled: false
+  oidc-client:
+    enabled: false
+konflux-build-driver:
+  konflux-processor: "foobar"
