@@ -1,6 +1,7 @@
 package org.jboss.pnc.konfluxbuilddriver.clients;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 
 /**
