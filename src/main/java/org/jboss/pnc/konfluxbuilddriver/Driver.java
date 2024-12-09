@@ -68,6 +68,9 @@ public class Driver {
         templateProperties.put("JVM_BUILD_SERVICE_REQPROCESSOR_IMAGE", config.processor());
         templateProperties.put("REVISION", buildRequest.scmRevision());
         templateProperties.put("URL", buildRequest.scmUrl());
+        templateProperties.put("caTrustConfigMapName", "custom-ca");
+        // TODO: This should be changed to true eventually.
+        templateProperties.put("ENABLE_INDY_PROXY", "false");
 
         PipelineRun pipelineRun;
         try {
@@ -75,7 +78,7 @@ public class Driver {
             // Various ways to create the initial PipelineRun object. We can use an objectmapper,
             // client.getKubernetesSerialization() or the load calls on the Fabric8 objects.
             pipelineRun = tc.v1().pipelineRuns()
-                    .load(IOUtils.resourceToURL("pipeline.yaml", Thread.currentThread().getContextClassLoader())).item();
+                    .load(IOUtils.resourceToURL("pipeline-run.yaml", Thread.currentThread().getContextClassLoader())).item();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

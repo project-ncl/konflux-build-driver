@@ -25,10 +25,6 @@ spec:
               storage: 1Gi
         status: {}
   params:
-    - name: caTrustConfigMapName
-      value: custom-ca
-    - name: ENABLE_INDY_PROXY
-      value: "false"
   # TODO: Should PNC set both limits and requests? See
   #   https://home.robusta.dev/blog/kubernetes-memory-limit
   #   https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
@@ -38,6 +34,3 @@ spec:
         - name: build
           computeResources:
             # limits/requests memory are configured dynamically in Driver.
-  taskRunTemplate:
-    podTemplate:
-      env:
