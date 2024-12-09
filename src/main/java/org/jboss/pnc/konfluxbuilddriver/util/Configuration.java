@@ -13,4 +13,6 @@ public interface Configuration {
 
     @WithName("pipeline-resolver")
     String resolverTarget();
+
+    String indyProxyEnabled();
 }

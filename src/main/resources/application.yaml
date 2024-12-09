@@ -3,6 +3,7 @@ konflux-build-driver:
   konflux-processor: "quay.io/redhat-user-workloads/konflux-jbs-pnc-tenant/jvm-build-service/build-request-processor:latest"
   # TODO: This will eventually be build-definitions repository
   pipeline-resolver: "https://raw.githubusercontent.com/redhat-appstudio/jvm-build-service/refs/heads/main/deploy/pipeline/mw-pipeline-v0.1.yaml"
+  indy-proxy-enabled: false
 quarkus:
   application:
     name: konflux-build-driver
@@ -11,7 +12,7 @@ quarkus:
   log:
     category:
       "org.jboss.pnc.konfluxbuilddriver":
-        level: DEBUG
+        level: INFO
   oidc:
     auth-server-url: https://keycloak-host/auth/realms/pncredhat
     client-id: client

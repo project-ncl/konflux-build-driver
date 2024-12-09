@@ -1,10 +1,12 @@
 package org.jboss.pnc.konfluxbuilddriver;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
@@ -28,6 +30,7 @@ import io.fabric8.tekton.pipeline.v1.ParamBuilder;
 import io.fabric8.tekton.pipeline.v1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1.PipelineRunStatusBuilder;
 import io.quarkus.oidc.client.OidcClient;
+import io.quarkus.runtime.StartupEvent;
 
 @ApplicationScoped
 public class Driver {
@@ -45,6 +48,17 @@ public class Driver {
 
     @Inject
     Configuration config;
+
+    URL pipelineRunTemplate;
+
+    void onStart(@Observes StartupEvent ev) {
+        try {
+            pipelineRunTemplate = IOUtils.resourceToURL("pipeline-run.yaml", Thread.currentThread().getContextClassLoader());
+            logger.debug("Driver creating with {}", pipelineRunTemplate);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public BuildResponse create(BuildRequest buildRequest) {
 
@@ -70,18 +84,11 @@ public class Driver {
         templateProperties.put("URL", buildRequest.scmUrl());
         templateProperties.put("caTrustConfigMapName", "custom-ca");
         // TODO: This should be changed to true eventually.
-        templateProperties.put("ENABLE_INDY_PROXY", "false");
+        templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
 
-        PipelineRun pipelineRun;
-        try {
-            var tc = client.adapt(TektonClient.class);
-            // Various ways to create the initial PipelineRun object. We can use an objectmapper,
-            // client.getKubernetesSerialization() or the load calls on the Fabric8 objects.
-            pipelineRun = tc.v1().pipelineRuns()
-                    .load(IOUtils.resourceToURL("pipeline-run.yaml", Thread.currentThread().getContextClassLoader())).item();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // Various ways to create the initial PipelineRun object. We can use an objectmapper,
+        // client.getKubernetesSerialization() or the load calls on the Fabric8 objects.
+        PipelineRun pipelineRun = client.adapt(TektonClient.class).v1().pipelineRuns().load(pipelineRunTemplate).item();
         pipelineRun = pipelineRun.edit().editOrNewSpec()
                 .editPipelineRef()
                 .editFirstParam().editOrNewValue().withStringVal(config.resolverTarget()).endValue()

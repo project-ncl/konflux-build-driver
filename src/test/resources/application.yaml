@@ -3,5 +3,9 @@ quarkus:
     enabled: false
   oidc-client:
     enabled: false
+  log:
+    category:
+      "org.jboss.pnc.konfluxbuilddriver":
+        level: DEBUG
 konflux-build-driver:
   konflux-processor: "foobar"
