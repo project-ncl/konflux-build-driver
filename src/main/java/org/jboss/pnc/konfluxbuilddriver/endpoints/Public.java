@@ -11,6 +11,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import org.jboss.pnc.api.dto.ComponentVersion;
 import org.jboss.pnc.konfluxbuilddriver.Driver;
+import org.jboss.pnc.konfluxbuilddriver.dto.BuildNotification;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
 import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
@@ -50,6 +51,12 @@ public class Public {
     public void cancel(CancelRequest cancelRequest) {
         logger.info("Requested cancel: {}", cancelRequest.pipelineId());
         driver.cancel(cancelRequest);
+    }
+
+    @Path("/notify")
+    @POST
+    public void notify(BuildNotification buildNotification) {
+        logger.info("Get notification: {}", buildNotification);
     }
 
     @Path("/version")
