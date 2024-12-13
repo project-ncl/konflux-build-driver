@@ -15,4 +15,6 @@ public interface Configuration {
     String resolverTarget();
 
     String indyProxyEnabled();
+
+    String selfBaseUrl();
 }
