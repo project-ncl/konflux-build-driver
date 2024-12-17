@@ -1,5 +1,7 @@
 package org.jboss.pnc.konfluxbuilddriver.dto;
 
+import org.jboss.pnc.api.dto.Request;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Builder;
@@ -19,6 +21,8 @@ public record BuildRequest(
         String repositoryDeployUrl,
         String repositoryBuildContentId,
         String namespace,
-        String podMemoryOverride) {
+        String podMemoryOverride,
+        // Callback to use for the completion notification
+        Request completionCallback) {
 
 }

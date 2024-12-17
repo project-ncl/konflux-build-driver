@@ -1,34 +1,52 @@
 package org.jboss.pnc.konfluxbuilddriver;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.pnc.api.constants.HttpHeaders;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenRequestDTO;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenResponseDTO;
+import org.jboss.pnc.konfluxbuilddriver.dto.BuildCompleted;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
 import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
+import org.jboss.pnc.konfluxbuilddriver.dto.PipelineNotification;
 import org.jboss.pnc.konfluxbuilddriver.util.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.fabric8.knative.internal.pkg.apis.Condition;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.fabric8.tekton.client.TektonClient;
 import io.fabric8.tekton.pipeline.v1.ParamBuilder;
 import io.fabric8.tekton.pipeline.v1.PipelineRun;
 import io.fabric8.tekton.pipeline.v1.PipelineRunStatusBuilder;
+import io.quarkus.logging.Log;
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.runtime.StartupEvent;
 
@@ -48,6 +66,9 @@ public class Driver {
 
     @Inject
     Configuration config;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     URL pipelineRunTemplate;
 
@@ -85,6 +106,18 @@ public class Driver {
         templateProperties.put("caTrustConfigMapName", "custom-ca");
         // TODO: This should be changed to true eventually.
         templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
+
+        try {
+            Request notificationCallback = new Request(
+                    Request.Method.PUT,
+                    new URI(StringUtils.appendIfMissing(config.selfBaseUrl(), "/") + "internal/completed"),
+                    Collections.singletonList(new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
+                    buildRequest.completionCallback());
+
+            templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
+        } catch (JsonProcessingException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
         // Various ways to create the initial PipelineRun object. We can use an objectmapper,
         // client.getKubernetesSerialization() or the load calls on the Fabric8 objects.
@@ -138,5 +171,32 @@ public class Driver {
      */
     public String getFreshAccessToken() {
         return oidcClient.getTokens().await().indefinitely().getAccessToken();
+    }
+
+    public void completed(PipelineNotification notification) {
+
+        // TODO: PNC build-driver uses BuildCompleted when notifying the callback.
+        String body = Serialization
+                .asJson(BuildCompleted.builder().buildId(notification.buildId()).status(notification.status()).build());
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(notification.completionCallback().getUri())
+                .method(notification.completionCallback().getMethod().name(), HttpRequest.BodyPublishers.ofString(body))
+        // TOOD: Timeouts?
+        // .timeout(Duration.ofSeconds(requestTimeout))
+        ;
+        notification.completionCallback().getHeaders().forEach(h -> builder.header(h.getName(), h.getValue()));
+
+        HttpRequest request = builder.build();
+        // TODO: Retry? Send async? Some useful mutiny examples from quarkus in https://gist.github.com/cescoffier/e9abce907a1c3d05d70bea3dae6dc3d5
+        // TODO: Do we need the bearer token here?
+        HttpResponse<String> response;
+        try (var httpClient = HttpClient.newHttpClient()) {
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Log.infof("Response %s", response);
+
     }
 }

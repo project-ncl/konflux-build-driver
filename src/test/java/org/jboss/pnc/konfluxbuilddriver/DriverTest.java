@@ -5,20 +5,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.logging.LogRecord;
+
+import javax.ws.rs.core.MediaType;
 
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.pnc.api.constants.HttpHeaders;
+import org.jboss.pnc.api.dto.Request;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenRequestDTO;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenResponseDTO;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
 import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
 import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
+import org.jboss.pnc.konfluxbuilddriver.dto.PipelineNotification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.github.tomakehurst.wiremock.WireMockServer;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
@@ -34,9 +43,12 @@ import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 @WithKubernetesTestServer
 @QuarkusTest
 @QuarkusTestResource(value = LogCollectingTestResource.class, restrictToAnnotatedClass = true, initArgs = @ResourceArg(name = LogCollectingTestResource.LEVEL, value = "FINE"))
+@QuarkusTestResource(WireMockExtensions.class)
 public class DriverTest {
 
     private static final String namespace = "test-namespace";
+
+    private WireMockServer wireMockServer;
 
     @KubernetesTestServer
     KubernetesServer mockServer;
@@ -60,7 +72,7 @@ public class DriverTest {
     }
 
     @Test
-    void verify() {
+    void cancel() {
         BuildRequest request = BuildRequest.builder().namespace(namespace).podMemoryOverride("1Gi").build();
         BuildResponse response = driver.create(request);
 
@@ -77,5 +89,20 @@ public class DriverTest {
         List<LogRecord> logRecords = LogCollectingTestResource.current().getRecords();
         assertTrue(logRecords.stream().anyMatch(r -> LogCollectingTestResource.format(r)
                 .contains("Retrieved pipeline run-mw-pipeline--00000000-0000-0000-0000-000000000005")));
+    }
+
+    @Test
+    public void testCompleted() throws URISyntaxException {
+
+        Request request = Request.builder()
+                .method(Request.Method.PUT)
+                .header(new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON))
+                .attachment(null)
+                .uri(new URI(wireMockServer.baseUrl() + "/invoker"))
+                .build();
+
+        driver.completed(
+                PipelineNotification.builder().completionCallback(request).buildId("1234").status("Succeeded").build());
+        assertEquals(200, wireMockServer.getServeEvents().getServeEvents().getFirst().getResponse().getStatus());
     }
 }
