@@ -67,6 +67,9 @@ public class Driver {
     @Inject
     Configuration config;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     URL pipelineRunTemplate;
 
     void onStart(@Observes StartupEvent ev) {
@@ -105,14 +108,13 @@ public class Driver {
         templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
 
         try {
-
             Request notificationCallback = new Request(
                     Request.Method.PUT,
                     new URI(StringUtils.appendIfMissing(config.selfBaseUrl(), "/") + "internal/completed"),
                     Collections.singletonList(new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
                     buildRequest.completionCallback());
 
-            templateProperties.put("NOTIFICATION_CONTEXT", new ObjectMapper().writeValueAsString(notificationCallback));
+            templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
         } catch (JsonProcessingException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
