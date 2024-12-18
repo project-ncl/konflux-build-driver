@@ -1,5 +1,6 @@
 package org.jboss.pnc.konfluxbuilddriver.endpoints;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PUT;
@@ -30,6 +31,7 @@ public class Internal {
     @PUT
     @Path("/completed")
     @RunOnVirtualThread
+    @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public void buildExecutionCompleted(PipelineNotification notification) {
         logger.info("Build completed, taskId: {}; status: {}.", notification.buildId(), notification.status());
         driver.completed(notification);

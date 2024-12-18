@@ -19,6 +19,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.kubernetes.client.KubernetesTestServer;
 import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -41,6 +42,7 @@ public class EndpointTest {
     }
 
     @Test
+    @TestSecurity(user = "testUser", roles = { "pnc-users-admin" })
     void verify() {
         BuildRequest request = BuildRequest.builder().namespace("default").podMemoryOverride("1Gi").build();
         Response res = RestAssured.given().contentType(ContentType.JSON)

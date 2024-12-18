@@ -1,5 +1,6 @@
 package org.jboss.pnc.konfluxbuilddriver.endpoints;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -39,6 +40,7 @@ public class Public {
     @POST
     @Path("/build")
     @RunOnVirtualThread
+    @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public BuildResponse build(BuildRequest buildRequest) {
         logger.info("Requested project build: {}", buildRequest.projectName());
         return driver.create(buildRequest);
@@ -47,6 +49,7 @@ public class Public {
     @PUT
     @Path("/cancel")
     @RunOnVirtualThread
+    @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public void cancel(CancelRequest cancelRequest) {
         logger.info("Requested cancel: {}", cancelRequest.pipelineId());
         driver.cancel(cancelRequest);
