@@ -4,6 +4,7 @@ konflux-build-driver:
   # TODO: This will eventually be build-definitions repository
   pipeline-resolver: "https://raw.githubusercontent.com/redhat-appstudio/jvm-build-service/refs/heads/main/deploy/pipeline/mw-pipeline-v0.1.yaml"
   indy-proxy-enabled: false
+  notification-enabled: false
   self-base-url: http://localhost:8081/
 quarkus:
   application:

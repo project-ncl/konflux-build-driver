@@ -17,4 +17,6 @@ public interface Configuration {
     String indyProxyEnabled();
 
     String selfBaseUrl();
+
+    Boolean notificationEnabled();
 }

@@ -107,16 +107,21 @@ public class Driver {
         // TODO: This should be changed to true eventually.
         templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
 
-        try {
-            Request notificationCallback = new Request(
-                    Request.Method.PUT,
-                    new URI(StringUtils.appendIfMissing(config.selfBaseUrl(), "/") + "internal/completed"),
-                    Collections.singletonList(new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
-                    buildRequest.completionCallback());
+        if (config.notificationEnabled()) {
+            try {
+                Request notificationCallback = new Request(
+                        Request.Method.PUT,
+                        new URI(StringUtils.appendIfMissing(config.selfBaseUrl(), "/") + "internal/completed"),
+                        Collections.singletonList(
+                                new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
+                        buildRequest.completionCallback());
 
-            templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
-        } catch (JsonProcessingException | URISyntaxException e) {
-            throw new RuntimeException(e);
+                templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
+            } catch (JsonProcessingException | URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            templateProperties.put("NOTIFICATION_CONTEXT", "");
         }
 
         // Various ways to create the initial PipelineRun object. We can use an objectmapper,
