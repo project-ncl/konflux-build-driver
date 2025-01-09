@@ -6,8 +6,8 @@ import io.smallrye.config.WithName;
 @ConfigMapping(prefix = "konflux-build-driver")
 public interface Configuration {
 
-    @WithName("konflux-processor")
-    String processor();
+    @WithName("pnc-konflux-tooling")
+    String toolingImage();
 
     String quayRepo();
 

@@ -18,6 +18,6 @@ public class UtilTest {
     @Test
     public void testMapping() {
         assertEquals("quay.io/redhat-user-workloads-stage/pnc-devel-tenant/pnc-konflux", configTest.quayRepo());
-        assertEquals("foobar", configTest.processor());
+        assertEquals("foobar", configTest.toolingImage());
     }
 }

@@ -100,7 +100,7 @@ public class Driver {
         templateProperties.put("MVN_REPO_DEPLOY_URL", buildRequest.repositoryDeployUrl());
         templateProperties.put("QUAY_REPO", config.quayRepo());
         templateProperties.put("RECIPE_IMAGE", buildRequest.recipeImage());
-        templateProperties.put("JVM_BUILD_SERVICE_REQPROCESSOR_IMAGE", config.processor());
+        templateProperties.put("JVM_BUILD_SERVICE_REQPROCESSOR_IMAGE", config.toolingImage());
         templateProperties.put("REVISION", buildRequest.scmRevision());
         templateProperties.put("URL", buildRequest.scmUrl());
         templateProperties.put("caTrustConfigMapName", "custom-ca");
