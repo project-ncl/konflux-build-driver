@@ -103,6 +103,10 @@
             <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkiverse.tektonclient</groupId>
             <artifactId>quarkus-tekton-client</artifactId>
             <version>1.0.1</version>
