@@ -8,8 +8,8 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
+import org.jboss.pnc.api.konfluxbuilddriver.dto.PipelineNotification;
 import org.jboss.pnc.konfluxbuilddriver.Driver;
-import org.jboss.pnc.konfluxbuilddriver.dto.PipelineNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class Internal {
     @RunOnVirtualThread
     @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public void buildExecutionCompleted(PipelineNotification notification) {
-        logger.info("Build completed, taskId: {}; status: {}.", notification.buildId(), notification.status());
+        logger.info("Build completed, taskId: {}; status: {}.", notification.getBuildId(), notification.getStatus());
         driver.completed(notification);
     }
 }

@@ -17,13 +17,13 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.pnc.api.constants.HttpHeaders;
 import org.jboss.pnc.api.dto.Request;
+import org.jboss.pnc.api.indy.dto.IndyTokenRequestDTO;
+import org.jboss.pnc.api.indy.dto.IndyTokenResponseDTO;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildResponse;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.CancelRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.PipelineNotification;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenRequestDTO;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenResponseDTO;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
-import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.PipelineNotification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -77,14 +77,14 @@ public class DriverTest {
         BuildResponse response = driver.create(request);
 
         var pipelineRuns = client.adapt(TektonClient.class).v1().pipelineRuns()
-                .inNamespace(response.namespace()).list().getItems();
+                .inNamespace(response.getNamespace()).list().getItems();
 
         assertEquals(1, pipelineRuns.size());
-        assertEquals(response.pipelineId(), pipelineRuns.getFirst().getMetadata().getName());
+        assertEquals(response.getPipelineId(), pipelineRuns.getFirst().getMetadata().getName());
 
-        driver.cancel(CancelRequest.builder().namespace(namespace).pipelineId(response.pipelineId()).build());
+        driver.cancel(CancelRequest.builder().namespace(namespace).pipelineId(response.getPipelineId()).build());
         pipelineRuns = client.adapt(TektonClient.class).v1().pipelineRuns()
-                .inNamespace(response.namespace()).list().getItems();
+                .inNamespace(response.getNamespace()).list().getItems();
         assertEquals("False", pipelineRuns.getFirst().getStatus().getConditions().getFirst().getStatus());
         List<LogRecord> logRecords = LogCollectingTestResource.current().getRecords();
         assertTrue(logRecords.stream().anyMatch(r -> LogCollectingTestResource.format(r)

@@ -11,10 +11,10 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import org.jboss.pnc.api.dto.ComponentVersion;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildResponse;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.CancelRequest;
 import org.jboss.pnc.konfluxbuilddriver.Driver;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
-import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
 import org.jboss.pnc.konfluxbuilddriver.util.Info;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class Public {
     @RunOnVirtualThread
     @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public BuildResponse build(BuildRequest buildRequest) {
-        logger.info("Requested project build: {}", buildRequest.projectName());
+        logger.info("Requested project build: {}", buildRequest.getProjectName());
         return driver.create(buildRequest);
     }
 
@@ -51,7 +51,7 @@ public class Public {
     @RunOnVirtualThread
     @RolesAllowed({ "pnc-app-konflux-build-driver-user", "pnc-users-admin" })
     public void cancel(CancelRequest cancelRequest) {
-        logger.info("Requested cancel: {}", cancelRequest.pipelineId());
+        logger.info("Requested cancel: {}", cancelRequest.getPipelineId());
         driver.cancel(cancelRequest);
     }
 

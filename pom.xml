@@ -61,6 +61,21 @@
         <format.skip>false</format.skip>
     </properties>
 
+    <!-- Other PNC code doesn't deploy to Sonatype Snapshots -->
+    <repositories>
+        <repository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -115,7 +130,7 @@
         <dependency>
             <groupId>org.jboss.pnc</groupId>
             <artifactId>pnc-api</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.6-SNAPSHOT</version>
         </dependency>
 
         <dependency>
