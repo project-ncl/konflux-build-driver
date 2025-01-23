@@ -42,7 +42,10 @@ import io.quarkus.test.kubernetes.client.WithKubernetesTestServer;
 
 @WithKubernetesTestServer
 @QuarkusTest
-@QuarkusTestResource(value = LogCollectingTestResource.class, restrictToAnnotatedClass = true, initArgs = @ResourceArg(name = LogCollectingTestResource.LEVEL, value = "FINE"))
+@QuarkusTestResource(
+        value = LogCollectingTestResource.class,
+        restrictToAnnotatedClass = true,
+        initArgs = @ResourceArg(name = LogCollectingTestResource.LEVEL, value = "FINE"))
 @QuarkusTestResource(WireMockExtensions.class)
 public class DriverTest {
 
@@ -76,19 +79,31 @@ public class DriverTest {
         BuildRequest request = BuildRequest.builder().namespace(namespace).podMemoryOverride("1Gi").build();
         BuildResponse response = driver.create(request);
 
-        var pipelineRuns = client.adapt(TektonClient.class).v1().pipelineRuns()
-                .inNamespace(response.getNamespace()).list().getItems();
+        var pipelineRuns = client.adapt(TektonClient.class)
+                .v1()
+                .pipelineRuns()
+                .inNamespace(response.getNamespace())
+                .list()
+                .getItems();
 
         assertEquals(1, pipelineRuns.size());
         assertEquals(response.getPipelineId(), pipelineRuns.getFirst().getMetadata().getName());
 
         driver.cancel(CancelRequest.builder().namespace(namespace).pipelineId(response.getPipelineId()).build());
-        pipelineRuns = client.adapt(TektonClient.class).v1().pipelineRuns()
-                .inNamespace(response.getNamespace()).list().getItems();
+        pipelineRuns = client.adapt(TektonClient.class)
+                .v1()
+                .pipelineRuns()
+                .inNamespace(response.getNamespace())
+                .list()
+                .getItems();
         assertEquals("False", pipelineRuns.getFirst().getStatus().getConditions().getFirst().getStatus());
         List<LogRecord> logRecords = LogCollectingTestResource.current().getRecords();
-        assertTrue(logRecords.stream().anyMatch(r -> LogCollectingTestResource.format(r)
-                .contains("Retrieved pipeline run-mw-pipeline--00000000-0000-0000-0000-000000000005")));
+        assertTrue(
+                logRecords.stream()
+                        .anyMatch(
+                                r -> LogCollectingTestResource.format(r)
+                                        .contains(
+                                                "Retrieved pipeline run-mw-pipeline--00000000-0000-0000-0000-000000000005")));
     }
 
     @Test

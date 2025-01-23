@@ -16,6 +16,3 @@ release.properties
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
-
-# cache folder for formatter-maven-plugin and impsort-maven-plugin
-.cache

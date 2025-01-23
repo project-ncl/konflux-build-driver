@@ -74,7 +74,8 @@ public class Driver {
 
     void onStart(@Observes StartupEvent ev) {
         try {
-            pipelineRunTemplate = IOUtils.resourceToURL("pipeline-run.yaml", Thread.currentThread().getContextClassLoader());
+            pipelineRunTemplate = IOUtils
+                    .resourceToURL("pipeline-run.yaml", Thread.currentThread().getContextClassLoader());
             logger.debug("Driver creating with {}", pipelineRunTemplate);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -83,7 +84,8 @@ public class Driver {
 
     public BuildResponse create(BuildRequest buildRequest) {
 
-        logger.info("Establishing token from Indy using clientId {}",
+        logger.info(
+                "Establishing token from Indy using clientId {}",
                 ConfigProvider.getConfig().getConfigValue("quarkus.oidc.client-id").getValue());
         IndyTokenResponseDTO tokenResponseDTO = indyService.getAuthToken(
                 new IndyTokenRequestDTO(buildRequest.getRepositoryBuildContentId()),
@@ -127,13 +129,20 @@ public class Driver {
         // Various ways to create the initial PipelineRun object. We can use an objectmapper,
         // client.getKubernetesSerialization() or the load calls on the Fabric8 objects.
         PipelineRun pipelineRun = client.adapt(TektonClient.class).v1().pipelineRuns().load(pipelineRunTemplate).item();
-        pipelineRun = pipelineRun.edit().editOrNewSpec()
+        pipelineRun = pipelineRun.edit()
+                .editOrNewSpec()
                 .editPipelineRef()
-                .editFirstParam().editOrNewValue().withStringVal(config.resolverTarget()).endValue()
+                .editFirstParam()
+                .editOrNewValue()
+                .withStringVal(config.resolverTarget())
+                .endValue()
                 .endParam()
                 .endPipelineRef()
-                .addAllToParams(templateProperties.entrySet().stream()
-                        .map(t -> new ParamBuilder().withName(t.getKey()).withNewValue(t.getValue()).build()).toList())
+                .addAllToParams(
+                        templateProperties.entrySet()
+                                .stream()
+                                .map(t -> new ParamBuilder().withName(t.getKey()).withNewValue(t.getValue()).build())
+                                .toList())
                 .editFirstTaskRunSpec()
                 .editFirstStepSpec()
                 .editComputeResources()
@@ -142,17 +151,24 @@ public class Driver {
                 .endComputeResources()
                 .endStepSpec()
                 .endTaskRunSpec()
-                .endSpec().build();
+                .endSpec()
+                .build();
 
         var created = client.resource(pipelineRun).inNamespace(buildRequest.getNamespace()).create();
 
-        return BuildResponse.builder().namespace(buildRequest.getNamespace()).pipelineId(created.getMetadata().getName())
+        return BuildResponse.builder()
+                .namespace(buildRequest.getNamespace())
+                .pipelineId(created.getMetadata().getName())
                 .build();
     }
 
     public void cancel(CancelRequest request) {
         var tc = client.adapt(TektonClient.class);
-        var pipeline = tc.v1().pipelineRuns().inNamespace(request.getNamespace()).withName(request.getPipelineId()).get();
+        var pipeline = tc.v1()
+                .pipelineRuns()
+                .inNamespace(request.getNamespace())
+                .withName(request.getPipelineId())
+                .get();
 
         logger.info("Retrieved pipeline {}", pipeline.getMetadata().getName());
 
@@ -170,7 +186,8 @@ public class Driver {
     }
 
     /**
-     * Get a fresh access token for the service account. This is done because we want to get a super-new token to be used since
+     * Get a fresh access token for the service account. This is done because we want to get a super-new token to be
+     * used since
      * we're not entirely sure when the http request will be done.
      *
      * @return fresh access token
@@ -183,11 +200,17 @@ public class Driver {
 
         // TODO: PNC build-driver uses BuildCompleted when notifying the callback.
         String body = Serialization
-                .asJson(BuildCompleted.builder().buildId(notification.getBuildId()).status(notification.getStatus()).build());
+                .asJson(
+                        BuildCompleted.builder()
+                                .buildId(notification.getBuildId())
+                                .status(notification.getStatus())
+                                .build());
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(notification.getCompletionCallback().getUri())
-                .method(notification.getCompletionCallback().getMethod().name(), HttpRequest.BodyPublishers.ofString(body))
+                .method(
+                        notification.getCompletionCallback().getMethod().name(),
+                        HttpRequest.BodyPublishers.ofString(body))
         // TOOD: Timeouts?
         // .timeout(Duration.ofSeconds(requestTimeout))
         ;
