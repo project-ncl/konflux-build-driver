@@ -23,14 +23,14 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.pnc.api.constants.HttpHeaders;
 import org.jboss.pnc.api.dto.Request;
+import org.jboss.pnc.api.indy.dto.IndyTokenRequestDTO;
+import org.jboss.pnc.api.indy.dto.IndyTokenResponseDTO;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildCompleted;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildResponse;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.CancelRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.PipelineNotification;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenRequestDTO;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenResponseDTO;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildCompleted;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
-import org.jboss.pnc.konfluxbuilddriver.dto.CancelRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.PipelineNotification;
 import org.jboss.pnc.konfluxbuilddriver.util.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,23 +86,23 @@ public class Driver {
         logger.info("Establishing token from Indy using clientId {}",
                 ConfigProvider.getConfig().getConfigValue("quarkus.oidc.client-id").getValue());
         IndyTokenResponseDTO tokenResponseDTO = indyService.getAuthToken(
-                new IndyTokenRequestDTO(buildRequest.repositoryBuildContentId()),
+                new IndyTokenRequestDTO(buildRequest.getRepositoryBuildContentId()),
                 "Bearer " + getFreshAccessToken());
 
         Map<String, String> templateProperties = new HashMap<>();
-        templateProperties.put("ACCESS_TOKEN", tokenResponseDTO.token());
-        templateProperties.put("BUILD_ID", buildRequest.repositoryBuildContentId());
-        templateProperties.put("BUILD_SCRIPT", buildRequest.buildScript());
-        templateProperties.put("BUILD_TOOL", buildRequest.buildTool());
-        templateProperties.put("BUILD_TOOL_VERSION", buildRequest.buildToolVersion());
-        templateProperties.put("JAVA_VERSION", buildRequest.javaVersion());
-        templateProperties.put("MVN_REPO_DEPENDENCIES_URL", buildRequest.repositoryDependencyUrl());
-        templateProperties.put("MVN_REPO_DEPLOY_URL", buildRequest.repositoryDeployUrl());
+        templateProperties.put("ACCESS_TOKEN", tokenResponseDTO.getToken());
+        templateProperties.put("BUILD_ID", buildRequest.getRepositoryBuildContentId());
+        templateProperties.put("BUILD_SCRIPT", buildRequest.getBuildScript());
+        templateProperties.put("BUILD_TOOL", buildRequest.getBuildTool());
+        templateProperties.put("BUILD_TOOL_VERSION", buildRequest.getBuildToolVersion());
+        templateProperties.put("JAVA_VERSION", buildRequest.getJavaVersion());
+        templateProperties.put("MVN_REPO_DEPENDENCIES_URL", buildRequest.getRepositoryDependencyUrl());
+        templateProperties.put("MVN_REPO_DEPLOY_URL", buildRequest.getRepositoryDeployUrl());
         templateProperties.put("QUAY_REPO", config.quayRepo());
-        templateProperties.put("RECIPE_IMAGE", buildRequest.recipeImage());
+        templateProperties.put("RECIPE_IMAGE", buildRequest.getRecipeImage());
         templateProperties.put("PNC_KONFLUX_TOOLING_IMAGE", config.toolingImage());
-        templateProperties.put("REVISION", buildRequest.scmRevision());
-        templateProperties.put("URL", buildRequest.scmUrl());
+        templateProperties.put("REVISION", buildRequest.getScmRevision());
+        templateProperties.put("URL", buildRequest.getScmUrl());
         templateProperties.put("caTrustConfigMapName", "custom-ca");
         // TODO: This should be changed to true eventually.
         templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
@@ -114,7 +114,7 @@ public class Driver {
                         new URI(StringUtils.appendIfMissing(config.selfBaseUrl(), "/") + "internal/completed"),
                         Collections.singletonList(
                                 new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
-                        buildRequest.completionCallback());
+                        buildRequest.getCompletionCallback());
 
                 templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
             } catch (JsonProcessingException | URISyntaxException e) {
@@ -137,21 +137,22 @@ public class Driver {
                 .editFirstTaskRunSpec()
                 .editFirstStepSpec()
                 .editComputeResources()
-                .addToLimits("memory", new Quantity(buildRequest.podMemoryOverride()))
-                .addToRequests("memory", new Quantity(buildRequest.podMemoryOverride()))
+                .addToLimits("memory", new Quantity(buildRequest.getPodMemoryOverride()))
+                .addToRequests("memory", new Quantity(buildRequest.getPodMemoryOverride()))
                 .endComputeResources()
                 .endStepSpec()
                 .endTaskRunSpec()
                 .endSpec().build();
 
-        var created = client.resource(pipelineRun).inNamespace(buildRequest.namespace()).create();
+        var created = client.resource(pipelineRun).inNamespace(buildRequest.getNamespace()).create();
 
-        return BuildResponse.builder().namespace(buildRequest.namespace()).pipelineId(created.getMetadata().getName()).build();
+        return BuildResponse.builder().namespace(buildRequest.getNamespace()).pipelineId(created.getMetadata().getName())
+                .build();
     }
 
     public void cancel(CancelRequest request) {
         var tc = client.adapt(TektonClient.class);
-        var pipeline = tc.v1().pipelineRuns().inNamespace(request.namespace()).withName(request.pipelineId()).get();
+        var pipeline = tc.v1().pipelineRuns().inNamespace(request.getNamespace()).withName(request.getPipelineId()).get();
 
         logger.info("Retrieved pipeline {}", pipeline.getMetadata().getName());
 
@@ -165,7 +166,7 @@ public class Driver {
 
         pipeline.setStatus(new PipelineRunStatusBuilder(pipeline.getStatus()).withConditions(cancelCondition).build());
 
-        tc.v1().pipelineRuns().inNamespace(request.namespace()).resource(pipeline).updateStatus();
+        tc.v1().pipelineRuns().inNamespace(request.getNamespace()).resource(pipeline).updateStatus();
     }
 
     /**
@@ -182,15 +183,15 @@ public class Driver {
 
         // TODO: PNC build-driver uses BuildCompleted when notifying the callback.
         String body = Serialization
-                .asJson(BuildCompleted.builder().buildId(notification.buildId()).status(notification.status()).build());
+                .asJson(BuildCompleted.builder().buildId(notification.getBuildId()).status(notification.getStatus()).build());
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(notification.completionCallback().getUri())
-                .method(notification.completionCallback().getMethod().name(), HttpRequest.BodyPublishers.ofString(body))
+                .uri(notification.getCompletionCallback().getUri())
+                .method(notification.getCompletionCallback().getMethod().name(), HttpRequest.BodyPublishers.ofString(body))
         // TOOD: Timeouts?
         // .timeout(Duration.ofSeconds(requestTimeout))
         ;
-        notification.completionCallback().getHeaders().forEach(h -> builder.header(h.getName(), h.getValue()));
+        notification.getCompletionCallback().getHeaders().forEach(h -> builder.header(h.getName(), h.getValue()));
 
         HttpRequest request = builder.build();
         // TODO: Retry? Send async? Some useful mutiny examples from quarkus in https://gist.github.com/cescoffier/e9abce907a1c3d05d70bea3dae6dc3d5

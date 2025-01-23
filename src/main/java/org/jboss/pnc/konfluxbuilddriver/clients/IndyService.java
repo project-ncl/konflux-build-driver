@@ -8,6 +8,8 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+import org.jboss.pnc.api.indy.dto.IndyTokenRequestDTO;
+import org.jboss.pnc.api.indy.dto.IndyTokenResponseDTO;
 
 /**
  * Indy service representing the Indy server. It uses Quarkus magical rest client to generate the client implementation

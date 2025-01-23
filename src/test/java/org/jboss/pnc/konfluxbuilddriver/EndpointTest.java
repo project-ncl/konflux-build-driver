@@ -6,11 +6,11 @@ import static org.mockito.Mockito.when;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.pnc.api.dto.ComponentVersion;
+import org.jboss.pnc.api.indy.dto.IndyTokenRequestDTO;
+import org.jboss.pnc.api.indy.dto.IndyTokenResponseDTO;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildRequest;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildResponse;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenRequestDTO;
-import org.jboss.pnc.konfluxbuilddriver.clients.IndyTokenResponseDTO;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildRequest;
-import org.jboss.pnc.konfluxbuilddriver.dto.BuildResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +51,7 @@ public class EndpointTest {
                 .post("/build");
 
         assertEquals(200, res.statusCode());
-        assertEquals("default", res.as(BuildResponse.class).namespace());
+        assertEquals("default", res.as(BuildResponse.class).getNamespace());
     }
 
     @Test
