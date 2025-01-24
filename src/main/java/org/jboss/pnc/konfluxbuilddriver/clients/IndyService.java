@@ -18,7 +18,8 @@ import org.jboss.pnc.api.indy.dto.IndyTokenResponseDTO;
 public interface IndyService {
 
     /**
-     * Ask Indy to give us the token that we will use for Maven communication with Indy, in the builder pod for the particular
+     * Ask Indy to give us the token that we will use for Maven communication with Indy, in the builder pod for the
+     * particular
      * buildId
      *
      * @param indyTokenRequestDTO the DTO to send to Indy

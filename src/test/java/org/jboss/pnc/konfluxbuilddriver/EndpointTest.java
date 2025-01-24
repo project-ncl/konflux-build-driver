@@ -45,7 +45,8 @@ public class EndpointTest {
     @TestSecurity(user = "testUser", roles = { "pnc-users-admin" })
     void verify() {
         BuildRequest request = BuildRequest.builder().namespace("default").podMemoryOverride("1Gi").build();
-        Response res = RestAssured.given().contentType(ContentType.JSON)
+        Response res = RestAssured.given()
+                .contentType(ContentType.JSON)
                 .body(request)
                 .when()
                 .post("/build");
