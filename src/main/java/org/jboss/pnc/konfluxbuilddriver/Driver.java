@@ -106,8 +106,11 @@ public class Driver {
         templateProperties.put("REVISION", buildRequest.getScmRevision());
         templateProperties.put("URL", buildRequest.getScmUrl());
         templateProperties.put("caTrustConfigMapName", "custom-ca");
-        // TODO: This should be changed to true eventually.
         templateProperties.put("ENABLE_INDY_PROXY", config.indyProxyEnabled());
+        templateProperties.put("INDY_PROXY_CLIENT_ID", config.indyProxyClientID().orElse(""));
+        templateProperties.put("INDY_PROXY_CLIENT_CREDENTIAL", config.indyProxyClientCredential().orElse(""));
+        templateProperties.put("DOMAIN_PROXY_TARGET_ALLOWLIST", config.domainProxyAllowList());
+        templateProperties.put("DOMAIN_PROXY_INTERNAL_NON_PROXY_HOSTS", config.domainProxyInternalNonProxyHosts());
 
         if (config.notificationEnabled()) {
             try {
@@ -154,6 +157,7 @@ public class Driver {
                 .endSpec()
                 .build();
 
+        logger.info("Created pipeline run locally; now creating in cluster");
         var created = client.resource(pipelineRun).inNamespace(buildRequest.getNamespace()).create();
 
         return BuildResponse.builder()
