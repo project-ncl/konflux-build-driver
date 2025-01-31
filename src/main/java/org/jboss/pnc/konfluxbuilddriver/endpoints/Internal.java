@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import io.smallrye.common.annotation.RunOnVirtualThread;
 
 /**
- * Endpoint to receive build result from the build agent.
+ * Endpoint to receive build result from the pipeline.
  */
 @Path("/internal")
 @Consumes(MediaType.APPLICATION_JSON)

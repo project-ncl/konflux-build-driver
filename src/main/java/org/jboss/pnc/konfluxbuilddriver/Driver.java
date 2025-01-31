@@ -120,8 +120,9 @@ public class Driver {
                         Collections.singletonList(
                                 new Request.Header(HttpHeaders.CONTENT_TYPE_STRING, MediaType.APPLICATION_JSON)),
                         buildRequest.getCompletionCallback());
-
-                templateProperties.put("NOTIFICATION_CONTEXT", objectMapper.writeValueAsString(notificationCallback));
+                String callback = objectMapper.writeValueAsString(notificationCallback);
+                logger.info("Adding notification callback {}", callback);
+                templateProperties.put("NOTIFICATION_CONTEXT", callback);
             } catch (JsonProcessingException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
