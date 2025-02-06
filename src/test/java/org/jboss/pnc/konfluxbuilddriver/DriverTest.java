@@ -23,6 +23,7 @@ import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildRequest;
 import org.jboss.pnc.api.konfluxbuilddriver.dto.BuildResponse;
 import org.jboss.pnc.api.konfluxbuilddriver.dto.CancelRequest;
 import org.jboss.pnc.api.konfluxbuilddriver.dto.PipelineNotification;
+import org.jboss.pnc.api.konfluxbuilddriver.dto.PipelineStatus;
 import org.jboss.pnc.konfluxbuilddriver.clients.IndyService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,7 +118,11 @@ public class DriverTest {
                 .build();
 
         driver.completed(
-                PipelineNotification.builder().completionCallback(request).buildId("1234").status("Succeeded").build());
+                PipelineNotification.builder()
+                        .completionCallback(request)
+                        .buildId("1234")
+                        .status(PipelineStatus.Succeeded)
+                        .build());
         assertEquals(200, wireMockServer.getServeEvents().getServeEvents().getFirst().getResponse().getStatus());
     }
 }
