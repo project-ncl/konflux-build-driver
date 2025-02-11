@@ -8,9 +8,6 @@ import io.smallrye.config.WithName;
 @ConfigMapping(prefix = "konflux-build-driver")
 public interface Configuration {
 
-    @WithName("pnc-konflux-tooling")
-    String toolingImage();
-
     String quayRepo();
 
     @WithName("pipeline-resolver")
