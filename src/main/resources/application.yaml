@@ -1,8 +1,6 @@
 konflux-build-driver:
   quay-repo: "quay.io/redhat-user-workloads-stage/pnc-devel-tenant/pnc-konflux"
-  pnc-konflux-tooling: "quay.io/redhat-user-workloads/konflux-jbs-pnc-tenant/konflux-tooling:latest"
-  # TODO: This will eventually be build-definitions repository
-  pipeline-resolver: "https://raw.githubusercontent.com/redhat-appstudio/jvm-build-service/refs/heads/main/deploy/pipeline/mw-pipeline-v0.1.yaml"
+  pipeline-resolver: "https://raw.githubusercontent.com/project-ncl/konflux-integration/refs/heads/main/pipeline/mw-pipeline-v0.1.yaml"
   domain-proxy-allow-list: "localhost,cdn-ubi.redhat.com,repo1.maven.org,repo.scala-sbt.org,scala.jfrog.io,repo.typesafe.com,jfrog-prod-usw2-shared-oregon-main.s3.amazonaws.com"
   domain-proxy-internal-non-proxy-hosts: "localhost"
   indy-proxy-enabled: false

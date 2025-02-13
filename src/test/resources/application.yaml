@@ -8,4 +8,4 @@ quarkus:
       "org.jboss.pnc.konfluxbuilddriver":
         level: DEBUG
 konflux-build-driver:
-  pnc-konflux-tooling: "foobar"
+  pipeline-resolver: "foobar"
