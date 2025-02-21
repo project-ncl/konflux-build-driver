@@ -9,21 +9,6 @@ spec:
     params:
       - name: url
         value: ""
-  workspaces:
-    - name: source
-      # TODO: If we have a custom git step we can share this with prebuild thereby eliminating the need for a volumeClaimTemplate
-      #
-      # emptyDir: {} - does not share the data between tasks
-      # When the volume is created from a template in a PipelineRun or TaskRun it will be deleted when the PipelineRun or TaskRun is deleted.
-      volumeClaimTemplate:
-        metadata:
-        spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-        status: {}
   params:
   # TODO: Should PNC set both limits and requests? See
   #   https://home.robusta.dev/blog/kubernetes-memory-limit
